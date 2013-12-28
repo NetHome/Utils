@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nu.nethome</groupId>
     <artifactId>utils</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>utils</name>
     <url>http://www.nethome.nu</url>
     <properties>

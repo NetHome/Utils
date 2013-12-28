@@ -64,8 +64,9 @@ public class RawDecoder  implements ProtocolDecoder, ProtocolSampler {
 	protected int m_Level = 0;
 	protected int m_LevelReportCount = 10;
 	protected LinkedList<Double> m_PulseLengths;
-	
-	public void setTarget(ProtocolDecoderSink sink) {
+    private int maxSampleLength;
+
+    public void setTarget(ProtocolDecoderSink sink) {
 		m_Sink = sink;
 	}
 
@@ -93,56 +94,48 @@ public class RawDecoder  implements ProtocolDecoder, ProtocolSampler {
 	 * @param samples Number of samples to collect.
 	 */
 	public void startFreeSampling(int samples) {
-		m_SampleCount = 0;
 		m_FreeSampleCount = samples;
-		m_FreeSampling = true;
-		m_Pulses = new LinkedList<Integer>();
-		m_Samples = new ArrayList<Integer>(samples+ 1);
-		m_PulseLengths = new LinkedList<Double>();
+        m_FreeSampling = true;
+        restartSampler(samples);
 	}
-	
-	/* (non-Javadoc)
-	 * @see ssg.ir.IRSampler#addSample(byte)
-	 */
+
+    private void restartSampler(int samples) {
+        m_SampleCount = 0;
+        m_Pulses = new LinkedList<Integer>();
+        m_Samples = new ArrayList<Integer>(samples+ 1);
+        m_PulseLengths = new LinkedList<Double>();
+        maxSampleLength = samples;
+    }
+
 	public void addSample(int sample) {
-		int absSample = Math.abs(sample);
-		if (m_Level < absSample) m_Level = absSample;
-		m_LevelReportCount--;
-		if (m_LevelReportCount <= 0){
-			m_Sink.reportLevel(m_Level);
-			m_Level -= 127 / (REPORTSPERSECOND * LEVELTIMETOZERO);
-			m_LevelReportCount = m_SampleFrequency/REPORTSPERSECOND;
-		}
+        calculateSignalLevel(sample);
 		if (m_IsSampling || m_FreeSampling) {
 			m_Samples.add(sample);
 			m_SampleCount++;
-			if (m_FreeSampling && m_SampleCount == m_FreeSampleCount) {
-				// We have collected the entire free sample, stop sampling and report it
-				m_FreeSampling = false;
-				m_FreeSampleCount = 0;
-				RawProtocolMessage message = new RawProtocolMessage(m_Pulses, m_Samples, m_SampleFrequency, m_PulseLengths);
-				// Report the sampled message
-				m_Sink.parsedMessage(message);
-			}
-			else if ((m_State == READING_MESSAGE) && (m_SampleCount > m_MaxMessageLength)){
-				// A raw sample has reached it's maximum size, stop sampling and report it.
-				endMessage();
-			}
+            if (m_SampleCount >= maxSampleLength) {
+                endMessage(!m_FreeSampling);
+            }
 		}
 	}
 
-	/** (non-Javadoc)
-	 * @see nu.nethome.util.ps.ProtocolDecoder#parse(double,boolean)
-	 * 
-	 */
-	public int parse(double pulse, boolean state) {
+    private void calculateSignalLevel(int sample) {
+        int absSample = Math.abs(sample);
+        if (m_Level < absSample) m_Level = absSample;
+        m_LevelReportCount--;
+        if (m_LevelReportCount <= 0){
+            m_Sink.reportLevel(m_Level);
+            m_Level -= 127 / (REPORTSPERSECOND * LEVELTIMETOZERO);
+            m_LevelReportCount = m_SampleFrequency/REPORTSPERSECOND;
+        }
+    }
+
+    public int parse(double pulse, boolean state) {
 		switch (m_State) {
 			case IDLE: {
 				if ((pulse > 0.0) && (pulse < 200000.0) && !state){
-					m_Pulses = new LinkedList<Integer>();
-					m_Samples = new ArrayList<Integer>(8000);
-					m_PulseLengths = new LinkedList<Double>();
-					m_SampleCount = 0;
+                    if (!m_FreeSampling) {
+                        restartSampler(m_MaxMessageLength);
+                    }
 					m_PulseCount = 1;
 					m_IsSampling = true;
 					m_Pulses.add(m_SampleCount);
@@ -152,14 +145,14 @@ public class RawDecoder  implements ProtocolDecoder, ProtocolSampler {
 				break;
 			}
 			case READING_MESSAGE: {
-				if ((pulse > 0) && (pulse < RAW_MESSAGE_END_GAP)) {
+				if ((pulse > 0) && ((pulse < RAW_MESSAGE_END_GAP) || m_FreeSampling)) {
 					m_Pulses.add(m_SampleCount);
 					m_PulseLengths.add(pulse);
 					m_PulseCount++;
 				}
 				else if (m_PulseCount > 1){
 					// It has been a long space, so we got our message.
-					endMessage();
+					endMessage(true);
 				}
 				break;
 			}
@@ -171,16 +164,19 @@ public class RawDecoder  implements ProtocolDecoder, ProtocolSampler {
 	
 	/**
 	 * End sampling of a raw message and report the collected message
-	 */
-	protected void endMessage() {
+     * @param trimEnd
+     */
+	protected void endMessage(boolean trimEnd) {
 		// First we trim  off the space from the samples
-		for (int i = m_Samples.size() - 1; i > m_SampleCountAtLastPulse; i--){
+		for (int i = m_Samples.size() - 1; trimEnd && (i > m_SampleCountAtLastPulse); i--){
 			m_Samples.remove(i);
 		}
 		RawProtocolMessage message = new RawProtocolMessage(m_Pulses, m_Samples, m_SampleFrequency, m_PulseLengths);
 		// Report the parsed message
 		m_Sink.parsedMessage(message);
 		m_IsSampling = false;
+        m_FreeSampling = false;
+        m_FreeSampleCount = 0;
 		m_State = IDLE;
 		System.out.println("Raw sample with " + Integer.toString(m_SampleCount) + " samples");
 	}

@@ -150,7 +150,7 @@ public class RawDecoder  implements ProtocolDecoder, ProtocolSampler {
 					m_PulseLengths.add(pulse);
 					m_PulseCount++;
 				}
-				else if (m_PulseCount > 1){
+				else if (m_PulseCount > 1 && pulse > 0){
 					// It has been a long space, so we got our message.
 					endMessage(true);
 				}

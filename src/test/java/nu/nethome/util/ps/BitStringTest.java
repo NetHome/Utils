@@ -82,20 +82,23 @@ public class BitStringTest {
 
     @Test
     public void extractInteger() throws Exception {
-        bitString = new BitString(10);
-        bitString.setBit(5, true);
+        bitString = new BitString(40);
+        bitString.setBit(35, true);
 
-        assertThat(bitString.extractInt(new BitString.Field(5, 5)), is(1));
-        assertThat(bitString.extractInt(new BitString.Field(0, 6)), is(32));
+        assertThat(bitString.extractInt(new BitString.Field(35, 5)), is(1));
+
+        bitString.setBit(37, true);
+        bitString.setBit(38, true);
+        assertThat(bitString.extractInt(new BitString.Field(30, 6)), is(32));
     }
 
     @Test
     public void insertInteger() throws Exception {
-        bitString = new BitString(10);
-        bitString.insert(new BitString.Field(5, 5), 5);
+        bitString = new BitString(50);
+        bitString.insert(new BitString.Field(45, 5), 5);
 
-        assertThat(bitString.extractInt(new BitString.Field(5, 5)), is(5));
-        assertThat(bitString.extractInt(new BitString.Field(0, 10)), is( 5 * 32));
+        assertThat(bitString.extractInt(new BitString.Field(45, 5)), is(5));
+        assertThat(bitString.extractInt(new BitString.Field(40, 10)), is( 5 * 32));
     }
 
     @Test

@@ -69,7 +69,7 @@ public class BitString {
         Validate.isTrue(position.startBit + position.length < MAX_LENGTH);
         long result = bits;
         result >>= position.startBit;
-        result &= (1 << (position.startBit + position.length)) - 1;
+        result &= ((1L << position.length) - 1L);
         return (int)result;
     }
 

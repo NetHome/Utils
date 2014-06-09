@@ -236,8 +236,6 @@ public class CULProtocolPort implements SerialPortEventListener, Runnable, Pulse
     	m_IsOpen = false;
     	if (m_SerialPort != null) {
     		m_SerialPort.close();
-    		m_InputStream = null;
-    		m_OutputStream = null;
     		m_SerialPort = null;
     	}
     }

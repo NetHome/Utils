@@ -73,6 +73,18 @@ public class BitString {
         return (int)result;
     }
 
+    public int extractSignedInt(Field position) {
+        int rawInt = extractInt(position);
+        if ((rawInt & (1L << (position.length - 1))) != 0) {
+            int mask = 0xFFFFFFFF & ~((1 << position.length) - 1);
+        }
+        Validate.isTrue(position.startBit + position.length < MAX_LENGTH);
+        long result = bits;
+        result >>= position.startBit;
+        result &= ((1L << position.length) - 1L);
+        return (int)result;
+    }
+
     public void insert(Field position, int value) {
         Validate.isTrue(position.startBit + position.length < MAX_LENGTH);
         if (position.startBit + position.length > length) {

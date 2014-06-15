@@ -235,12 +235,20 @@ public class CULProtocolPort implements SerialPortEventListener, Runnable, Pulse
     public void close() {
     	m_IsOpen = false;
     	if (m_SerialPort != null) {
-    		m_SerialPort.close();
-    		m_SerialPort = null;
+            closeSerialPort();
+            m_SerialPort = null;
     	}
     }
-    
-	public boolean isOpen() {
+
+    private void closeSerialPort() {
+        if (m_SerialPort instanceof RXTXPort) {
+            RXTXHack.closeRxtxPort((RXTXPort)m_SerialPort);
+        } else {
+            m_SerialPort.close();
+        }
+    }
+
+    public boolean isOpen() {
 		return m_IsOpen;
 	}
 

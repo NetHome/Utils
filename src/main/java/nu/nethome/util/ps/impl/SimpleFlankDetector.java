@@ -31,10 +31,11 @@ import nu.nethome.util.ps.ProtocolDecoder;
  * @author Stefan
  */
 public class SimpleFlankDetector implements ProtocolSampler {
-	
-	final static double PUSH_PERIOD = 200e-3;
 
-	protected ProtocolDecoder m_ProtocolDecoder;
+    final static double PUSH_PERIOD = 200e-3;
+    public static final int NO_FLANK = -1;
+
+    protected ProtocolDecoder m_ProtocolDecoder;
 	
 	// Sample Parameters
 	protected int m_FlankSwing = 50; // 70;
@@ -55,8 +56,9 @@ public class SimpleFlankDetector implements ProtocolSampler {
 
 		// Detect if there is a new flank in the data stream
 		int flankDirection  = 0;
-		if (Math.abs(m_Last[m_FlankLength] - sample) > m_FlankSwing) {
-			flankDirection = (int) Math.signum(m_Last[m_FlankLength] - sample);
+        int flankIndex = findFlankIndex(sample);
+        if (flankIndex != NO_FLANK) {
+			flankDirection = (int) Math.signum(m_Last[flankIndex] - sample);
 		}
 		if ((flankDirection != 0) && (flankDirection != m_LastFlankDirection ) && (m_CurrentStateCounter > m_FlankHoldoff))
 		{
@@ -104,7 +106,16 @@ public class SimpleFlankDetector implements ProtocolSampler {
 		m_CurrentStateCounter++;
 	}
 
-	public void setProtocolDecoder(ProtocolDecoder decoder) {
+    private int findFlankIndex(int sample) {
+        for (int i = 0; i < 6; i++) {
+            if (Math.abs(m_Last[i] - sample) > m_FlankSwing) {
+                return i;
+            }
+        }
+        return NO_FLANK;
+    }
+
+    public void setProtocolDecoder(ProtocolDecoder decoder) {
 		m_ProtocolDecoder = decoder;
 	}
 

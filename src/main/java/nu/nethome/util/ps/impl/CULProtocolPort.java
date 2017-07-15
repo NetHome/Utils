@@ -32,7 +32,7 @@ import java.util.TooManyListenersException;
 /**
  * The CULProtocolPort interfaces with an USB radio transceiver and sends and receives data
  * in form of pulse trains to/from the transceiver. The CUL transceiver can be found at:
- * {@see http://busware.de/tiki-index.php?page=CUL}. Special firmware from NetHome is
+ * http://busware.de/tiki-index.php?page=CUL. Special firmware from NetHome is
  * needed on the CUL.
  * 
  * @author Stefan

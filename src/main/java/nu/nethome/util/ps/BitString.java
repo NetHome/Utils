@@ -20,6 +20,11 @@ public class BitString {
         this.length = length;
     }
 
+    public void setValue(BitString from) {
+        length = from.length;
+        bits = from.bits;
+    }
+
     public BitString() {
         length = 0;
     }
@@ -100,6 +105,16 @@ public class BitString {
         bits |= valueMask;
     }
 
+    public int[] toByteInts() {
+        int noBytes = (length + 7) / 8;
+        int[] result = new int[noBytes];
+
+        for (int i = 0; i < noBytes; i++) {
+            result[i] = extractInt(new Field(i * 8, 8));
+        }
+        return result;
+    }
+
     /**
      * Represents a field of bits within a bit string. The field is defined as start bit position (inclusive) and
      * a length of the field.
@@ -114,5 +129,23 @@ public class BitString {
             this.startBit = startBit;
             this.length = length;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BitString bitString = (BitString) o;
+
+        if (length != bitString.length) return false;
+        return bits == bitString.bits;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = length;
+        result = 31 * result + (int) (bits ^ (bits >>> 32));
+        return result;
     }
 }

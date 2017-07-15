@@ -109,4 +109,32 @@ public class BitStringTest {
         assertThat(bitString.length(), is(10));
         assertThat(bitString.extractInt(new BitString.Field(5, 5)), is(5));
     }
+
+    @Test
+    public void convertToEvenBytes() throws Exception {
+        bitString = new BitString(1);
+        int byte1 = 47;
+        int byte2 = 17;
+        bitString.insert(new BitString.Field(0, 8), byte1);
+        bitString.insert(new BitString.Field(8, 8), byte2);
+
+        int[] ints = bitString.toByteInts();
+        assertThat(ints.length, is(2));
+        assertThat(ints[0], is(byte1));
+        assertThat(ints[1], is(byte2));
+    }
+
+    @Test
+    public void convertToPartBytes() throws Exception {
+        bitString = new BitString(1);
+        int byte1 = 47;
+        int byte2 = 2;
+        bitString.insert(new BitString.Field(0, 8), byte1);
+        bitString.insert(new BitString.Field(8, 2), byte2);
+
+        int[] ints = bitString.toByteInts();
+        assertThat(ints.length, is(2));
+        assertThat(ints[0], is(byte1));
+        assertThat(ints[1], is(byte2));
+    }
 }

@@ -51,10 +51,22 @@ public class ProtocolMessage implements Message {
      * @param rawLength Length of the raw binary message in bytes
      */
 	public ProtocolMessage(String protocol, int command, int address, int rawLength) {
+		this(protocol, command, address, new int[rawLength]);
+	}
+
+    /**
+     * Creates a protocol message.
+     *
+     * @param protocol Name of the protocol
+     * @param command Integer representation of the protocol command
+     * @param address Integer representation of the destination address/resource
+     * @param raw Binary message in bytes
+     */
+	public ProtocolMessage(String protocol, int command, int address, int[] raw) {
 		this.protocol = protocol;
 		this.command = command;
 		this.address = address;
-		rawMessage = new int[rawLength];
+		rawMessage = raw;
 		fields = new ArrayList<FieldValue>();
 	}
 

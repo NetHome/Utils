@@ -35,6 +35,7 @@ public class BitString {
 
     public void clear() {
         length = 0;
+        bits = 0;
     }
 
     public boolean getBit(int position) {
@@ -67,6 +68,12 @@ public class BitString {
         bits <<= 1;
         bits |= lsb ? 1 : 0;
         length++;
+    }
+
+    public boolean shiftRight(int positions) {
+        long original = bits;
+        bits >>= positions;
+        return (original & 1) != 0;
     }
 
     public int extractInt(Field position) {
@@ -115,22 +122,6 @@ public class BitString {
         return result;
     }
 
-    /**
-     * Represents a field of bits within a bit string. The field is defined as start bit position (inclusive) and
-     * a length of the field.
-     */
-    public static class Field {
-        public final int startBit;
-        public final int length;
-
-        public Field(int startBit, int length) {
-            Validate.isTrue(startBit >= 0);
-            Validate.isTrue(length > 0);
-            this.startBit = startBit;
-            this.length = length;
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -148,4 +139,21 @@ public class BitString {
         result = 31 * result + (int) (bits ^ (bits >>> 32));
         return result;
     }
+
+    /**
+     * Represents a field of bits within a bit string. The field is defined as start bit position (inclusive) and
+     * a length of the field.
+     */
+    public static class Field {
+        public final int startBit;
+        public final int length;
+
+        public Field(int startBit, int length) {
+            Validate.isTrue(startBit >= 0);
+            Validate.isTrue(length > 0);
+            this.startBit = startBit;
+            this.length = length;
+        }
+    }
+
 }

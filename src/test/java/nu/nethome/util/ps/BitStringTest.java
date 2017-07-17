@@ -137,4 +137,39 @@ public class BitStringTest {
         assertThat(ints[0], is(byte1));
         assertThat(ints[1], is(byte2));
     }
+
+    @Test
+    public void equalWorksAfterClear() throws Exception {
+        final int value = 12345;
+        final int largeValue = 1234567;
+        BitString bitString1 = new BitString(value, 16);
+        BitString bitString2 = new BitString(largeValue, 32);
+
+        assertThat(bitString1.equals(bitString2), is(false));
+
+        bitString2.clear();
+        bitString2.insert(new BitString.Field(0, 16), value);
+
+        assertThat(bitString1.equals(bitString2), is(true));
+    }
+
+    @Test
+    public void shiftsRight() throws Exception {
+        final int value = 64;
+        bitString = new BitString(value, 8);
+        bitString.shiftRight(2);
+
+        assertThat(bitString.extractInt(new BitString.Field(0, 8)), is(value / 4));
+    }
+
+    @Test
+    public void shiftsRightReturnsLSB() throws Exception {
+        final int value1 = 64;
+        final int value2 = 65;
+        BitString bitString1 = new BitString(value1, 8);
+        BitString bitString2 = new BitString(value2, 8);
+
+        assertThat(bitString1.shiftRight(3), is(false));
+        assertThat(bitString2.shiftRight(3), is(true));
+    }
 }

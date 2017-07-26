@@ -5,6 +5,7 @@ import org.apache.commons.lang3.Validate;
 /**
  * Represents a string of bits.
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class BitString {
     private static final int MAX_LENGTH = 64;
     private int length;
@@ -129,8 +130,7 @@ public class BitString {
 
         BitString bitString = (BitString) o;
 
-        if (length != bitString.length) return false;
-        return bits == bitString.bits;
+        return length == bitString.length && bits == bitString.bits;
     }
 
     @Override
